@@ -1,0 +1,5 @@
+(executable
+ (public_name camlocraft)
+ (name main)
+ (libraries camlocraft tgls tgls.tgl4 glfw-ocaml)
+)
