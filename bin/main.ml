@@ -5,9 +5,6 @@ end
 open Camlocraft.Shaders
 open Camlocraft.Graphics
 
-let fps : int = 30
-let windowTitle = "Camlocraft"
-
 let processInput ~window : unit=
   if GLFW.getKey ~window:window ~key:GLFW.Escape ||
      GLFW.getKey ~window:window ~key:GLFW.Q
@@ -42,7 +39,7 @@ let init () =
   let window = GLFW.createWindow
       ~width:800
       ~height:600
-      ~title:windowTitle
+      ~title:Config.windowTitle
       ?monitor:None ?share:None () in
   GLFW.makeContextCurrent ~window: (Some window);
   ignore @@ GLFW.setFramebufferSizeCallback ~window:window ~f:(Some (fun _ w h -> Gl.viewport 0 0 w h));
@@ -55,14 +52,14 @@ let mainLoop (graphicContext:graphics_ctx) =
 
   while (not @@ shouldClose ()) do
 
-    Gl.clear(Gl.color_buffer_bit lor Gl.depth_buffer_bit ); 
+    Gl.clear(Gl.color_buffer_bit lor Gl.depth_buffer_bit );
 
     processInput ~window:graphicContext.window;
     render graphicContext;
 
     GLFW.swapBuffers ~window:graphicContext.window;
     GLFW.pollEvents ();
-    Unix.sleepf ( 1.0 /. float_of_int fps )
+    Unix.sleepf ( 1.0 /. float_of_int Config.fps )
   done
 
 let _ =

@@ -21,7 +21,7 @@ let getErrorString obj getIV getInfoLog =
 
 let diagnose ~shader =
   let status = creationResult ~shader:shader in
-  log @@ if status != Int32.zero then
+  log @@ if status <> Int32.zero then
     getErrorString shader Gl.get_shaderiv Gl.get_shader_info_log
   else
     "shader compiled successfully";
@@ -63,7 +63,7 @@ let programCreationResult ~program =
 
 let diagnoseProgram ~program =
   let status = programCreationResult ~program:program in
-  print_string @@ if status != Int32.zero then
+  print_string @@ if status <> Int32.zero then
     getErrorString program Gl.get_programiv Gl.get_program_info_log
   else "program compiled and linked successfully";
   print_string "\n" ;
