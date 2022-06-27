@@ -72,7 +72,6 @@ struct
   let to_array v = v
   let from_array v = v
 
-
 end
 
 (** Module type for 4x4 matrices. *)
@@ -245,3 +244,65 @@ module Matrix4F = struct
   (* let scale: float -> matrix4 = _ *)
 
 end
+
+(** Type of modules implementing operations on quaternions. *)
+module type QuaternionType = sig
+  module F:FieldType
+  type elt = F.elt
+  type quat
+  type unop = quat -> quat
+  type binop = quat -> quat -> quat
+
+  val add: binop
+  val inverse: unop
+  val sub: binop
+  val mul_n: elt -> quat -> quat
+  val mul_q: quat -> quat -> quat
+
+  val get: int -> quat -> elt
+  val set: int -> elt -> quat -> unit
+
+  val id : quat
+  val to_array: quat -> elt array
+  val from_array: elt array -> quat
+end
+
+(** Functor to construct vector operations over a specific field. *)
+module Make_Quaternion(F:FieldType) : QuaternionType with module F := F =
+struct
+  type elt = F.elt
+  type quat = elt array
+  type unop = quat -> quat
+  type binop = quat -> quat -> quat
+
+  let add = Array.map2 F.add
+
+  let inverse = Array.map (fun x -> F.neg x)
+
+  let sub x y = add x (inverse y)
+
+  let mul_n n = Array.map (fun c -> F.mul c n)
+  let mul_q q1 q2 =
+    let neg x = F.sub F.zero x in
+    let (+) x1 x2 = F.add x1 x2 in
+    let (-) x1 x2 = F.add x1 (neg x2) in
+    let ( * ) x1 x2 = F.mul x1 x2 in
+    [|
+               q1.(0) * q2.(3) + q1.(1) * q2.(2) - q1.(2) * q2.(1) + q1.(3) * q2.(0);
+      F.zero - q1.(0) * q2.(2) + q1.(1) * q2.(3) + q1.(2) * q2.(0) + q1.(3) * q2.(1);
+               q1.(0) * q2.(1) - q1.(1) * q2.(0) + q1.(2) * q2.(3) + q1.(3) * q2.(2);
+      F.zero - q1.(0) * q2.(0) - q1.(1) * q2.(1) - q1.(2) * q2.(2) + q1.(3) * q2.(3);
+    |]
+
+  let id  = Array.make 4 F.one
+
+  let get i v = Array.get v i
+  let set i e v  = Array.set v i e
+  let to_array v = v
+  let from_array v = v
+end
+
+
+module QuaternionF = ((Make_Quaternion(FieldFloat)): QuaternionType with module F:= FieldFloat)
+
+
