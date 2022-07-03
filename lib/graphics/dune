@@ -1,0 +1,6 @@
+(library
+ (name graphics)
+ ;;(root_module graphics)
+;;  (modules_without_implementation graphics)
+ (libraries tgls tgls.tgl4 glfw-ocaml bigstring ccmath)
+)

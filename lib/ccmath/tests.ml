@@ -1,4 +1,6 @@
-open Math.Matrix4F
+open Matrix.Matrix4F
+
+(** Matrix operations *)
 
 let meq =  forall_2 Float.equal
 let%test _ = meq (add id id) (diag 2.0)
@@ -69,3 +71,17 @@ let%test _ = let case =
       [| 3.0;-3.0;10.0; 15.0 |];
       [| 0.0; 0.0; 0.0; 1.0 |];
     |]
+
+
+(** Quaternion tests *)
+open Quaternion.QuaternionF
+
+let%test _ = let q = from_array [| 1.0; 2.0; 3.0; 4.0 |] in
+  mul_q id q = q
+
+let%test _ = let q = from_array [| 1.0; 2.0; 3.0; 4.0 |] in
+  mul_q q id = q
+
+let%test _ = inverse id = id
+
+(* TODO vec3 tests, matrix vector operations, quaternion vector operations *)

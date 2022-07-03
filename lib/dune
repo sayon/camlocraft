@@ -1,6 +1,0 @@
-(library
- (name camlocraft)
- (inline_tests)
- (preprocess (pps ppx_inline_test))
- (libraries tgls tgls.tgl4 glfw-ocaml bigstring)
-)

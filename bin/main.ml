@@ -2,8 +2,7 @@ open struct
   module Gl = Tgl4.Gl
 end
 
-open Camlocraft.Shaders
-open Camlocraft.Graphics
+open Graphics.Renderer
 
 let processInput ~window : unit=
   if GLFW.getKey ~window:window ~key:GLFW.Escape ||
@@ -12,23 +11,8 @@ let processInput ~window : unit=
     GLFW.setWindowShouldClose ~window:window ~b:true
 
 let init_graphic_context ~window  =
-  let vao,_ = genVertexArray
-      ~vertices:
-        [|
-          -0.5; -0.5; 0.0;
-          0.5; -0.5; 0.0;
-          0.0;  0.5; 0.0
-        |] in
-  let program = createSampleProgram () in
-  Gl.use_program program;
-  Gl.bind_vertex_array vao;
   Gl.clear_color 0.2 0.3 0.3 1.0;
-  { window = window; program = program; vao = vao }
-
-let render (c:graphics_ctx) =
-  Gl.bind_vertex_array c.vao;
-  Gl.draw_arrays Gl.triangles 0 3;
-  Gl.flush ()
+  { window = window; renderer = load_meshes () }
 
 let init () =
   GLFW.init ();
@@ -47,17 +31,17 @@ let init () =
 
 let deinit () =  GLFW.terminate ()
 
-let mainLoop (graphicContext:graphics_ctx) =
-  let shouldClose () = GLFW.windowShouldClose ~window:graphicContext.window in
+let mainLoop (ctx:graphics_ctx) =
+  let shouldClose () = GLFW.windowShouldClose ~window:ctx.window in
 
   while (not @@ shouldClose ()) do
 
     Gl.clear(Gl.color_buffer_bit lor Gl.depth_buffer_bit );
 
-    processInput ~window:graphicContext.window;
-    render graphicContext;
+    processInput ~window:ctx.window;
+    render ctx.renderer;
 
-    GLFW.swapBuffers ~window:graphicContext.window;
+    GLFW.swapBuffers ~window:ctx.window;
     GLFW.pollEvents ();
     Unix.sleepf ( 1.0 /. float_of_int Config.fps )
   done

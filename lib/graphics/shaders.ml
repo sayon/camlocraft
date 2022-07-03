@@ -4,6 +4,9 @@ end
 
 open Bigarray_ext
 
+type shader_program = { id: int }
+
+(* TODO refactor out to a centralized logging system *)
 let log = print_string
 
 let creationResult ~shader =
@@ -88,4 +91,4 @@ let createSampleProgram () =
   Gl.detach_shader program fs;
   Gl.delete_shader vs;
   Gl.delete_shader fs;
-  program
+  { id=program }
