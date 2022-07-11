@@ -1,10 +1,20 @@
 #version 330 core
-layout (location = 0) in vec3 vertexPosition_modelspace;
-uniform mat4 MVP;
-out vec4 vertexColor;
+precision mediump int;
+precision mediump float;
+
+layout (location = 0) in vec3 in_position;
+layout (location = 1) in vec3 in_normal;
+out vec3 v3_normal;
+out vec3 v3_position;
+
+uniform mat4 u_MVP;
+uniform mat4 u_MV;
+
 void main()
 {
-  gl_Position =vec4 (vertexPosition_modelspace,1.0);
-  gl_Position = MVP * vec4(vertexPosition_modelspace, 1.0);
-  vertexColor = vec4(vertexPosition_modelspace, 1);
+ // v3_normal = (mat3(transpose(inverse(model)))) * inNormal;
+  v3_normal = normalize( vec3( u_MV * vec4(in_normal, 0.0)) );
+  vec4 position = u_MVP * vec4(in_position, 1.0);
+  v3_position = vec3( position );
+  gl_Position = position;
 }

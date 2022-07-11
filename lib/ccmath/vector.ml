@@ -24,6 +24,7 @@ module type VectorType = sig
 
   val zipWith: (elt -> elt -> elt) -> vec -> vec -> vec
   val map: (elt -> elt) -> vec -> vec
+  val to_string: vec -> string
 end
 
 
@@ -80,7 +81,7 @@ struct
 
   let cross x y = match x,y with
     | {x=a1; y=a2; z=a3} , {x=b1; y=b2; z=b3} ->
-      mk_vec3 (a2*b3 -a3*b2) (a3*b1-a1*b3) (a1*b1-a2*b1)
+      mk_vec3 (a2*b3 -a3*b2) (a3*b1-a1*b3) (a1*b2-a2*b1)
 
   let length_sq x = dot x x
   let length v = F.sqrt @@ length_sq v
@@ -94,6 +95,8 @@ struct
   | 2-> z
   | _-> raise @@ Invalid_argument "Index out of range for vector3"
 
+  let to_string = function
+    | {x; y; z} -> Printf.sprintf "(%s; %s; %s)" (F.to_string x) (F.to_string y) (F.to_string z)
 end
 
 module Vector3F = ((Make_Vector3(FieldFloat)): Vector3Type with module F:= FieldFloat)
@@ -111,7 +114,6 @@ module type Vector4Type = sig
 
   val normalize_hom: unop
   val is_normalized_hom: vec4 -> bool
-
 end
 
 (** Functor to construct vector operations over a specific field. *)
@@ -163,6 +165,15 @@ struct
       | 2-> z
       | 3-> w
       | _-> raise @@ Invalid_argument "Index out of range for vector4"
+
+
+  let to_string = function
+    | {x; y; z; w} -> "(" ^ "," ^
+                   F.to_string x ^ "," ^
+                   F.to_string y ^ "," ^
+                   F.to_string z ^ "," ^
+                   F.to_string w ^ ")"
+
 end
 
 module Vector4F = ((Make_Vector4(FieldFloat)): Vector4Type with module F:= FieldFloat)

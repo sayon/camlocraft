@@ -1,0 +1,6 @@
+(library
+ (name kernel)
+ (inline_tests (deps (source_tree tests)))
+ (preprocess (pps ppx_inline_test))
+ (libraries bigstring tgls tgls.tgl4)
+)

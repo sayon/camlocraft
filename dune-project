@@ -13,6 +13,7 @@
 
 (license LICENSE)
 
+(wrapped_executables false)
 
 (package
  (name camlocraft)

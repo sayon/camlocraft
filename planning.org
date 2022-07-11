@@ -1,0 +1,31 @@
+#+TITLE: Scheme of the engine
+* World
+* World generator
+Layers + noise + maybe caves? 
+* Event queue
+* Time service
+Timed events + time between frames
+* Renderer
+** Camera
+follows an object or freeway
+** World
+*** Terrain
+- Shaders: Type, Vertex, transformation matrix, Texture coordinates (is texture
+uniform?)
+- Only draw what's visible
+*** Water
+Texture + fancy shaders; noise, reflection of sky? 
+*** Sky
+Generate on the fly; stars, sun/moon as light source
+*** Objects
+Models;
+.obj or something
+Main character
+Actions
+
+*** Decorations
+Trees? Other resources
+*** Lights
+- Shaders should be aware of them
+- Only small-distance point lights?
+  Just phong model with point lights
