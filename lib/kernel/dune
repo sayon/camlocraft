@@ -1,6 +1,9 @@
+(include_subdirs unqualified)
+
 (library
  (name kernel)
  (inline_tests (deps (source_tree tests)))
+ (foreign_stubs (language c) (names bigarray_ext))
  (preprocess (pps ppx_inline_test))
  (libraries bigstring tgls tgls.tgl4)
 )

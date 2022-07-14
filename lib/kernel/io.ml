@@ -2,13 +2,16 @@ open Bigarray
 
 module Bigarray_ext = struct
 
-  let create_floats = Bigarray.Array1.of_array Bigarray.float32 Bigarray.c_layout
-  let create_ints = Bigarray.Array1.of_array Bigarray.int32 Bigarray.c_layout
-  let create_chars = Bigarray.Array1.of_array Bigarray.char Bigarray.c_layout
+  open Bigarray
+  open Bigarray.Array1
+
+  let create_floats = of_array float32 c_layout
+  let create_ints = of_array int32 c_layout
+  let create_chars = of_array char c_layout
   let create_int_buffer ~size = create_ints (Array.make size (Int32.of_int 0))
   let create_char_buffer ~size = create_chars (Array.make size (Char.chr 0))
   let create_byte_buffer ~size = Bigstring.create size
-  let get ~buffers ~id = Int32.to_int (Bigarray.Array1.unsafe_get buffers id)
+  let get ~buffers ~id = Int32.to_int (unsafe_get buffers id)
 
   (** Utility function to use generators returning their result by a
       pointer. *)
@@ -20,23 +23,30 @@ end
 
 module RawBuffer = struct
   (** A type of a raw buffer of bytes. *)
-  type raw_buffer = (int, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-  let raw_buffer_create size = Bigarray.Array1.create Bigarray.int8_unsigned Bigarray.c_layout size
+  open Bigarray
 
-  (** Get a slice of {!Bigarray.Array1} starting at [from] and up to, but not
+  type raw_buffer = (int, int8_unsigned_elt, c_layout) Array1.t
+
+  let create size = Array1.create int8_unsigned c_layout size
+
+  (** Get a slice of {!Array1} starting at [from] and up to, but not
       including [limit]. The result is an instance of {!Bytes.t}. *)
   let slice_bytes (array:raw_buffer) from limit =
     let length = limit - from in
-    let sub = Bigarray.Array1.sub array from length in
-    Bytes.init length (fun x -> Char.chr (Bigarray.Array1.unsafe_get sub x))
+    let sub = Array1.sub array from length in
+    Bytes.init length (fun x -> Char.chr (Array1.unsafe_get sub x))
 
 
   let copy a1 s1 a2 s2 length =
     for i = s1 to s1 + length - 1 do
-      let tmp = Bigarray.Array1.unsafe_get a1 (s1+i) in
-      Bigarray.Array1.unsafe_set a2 (s2+i) tmp
+      let tmp = Array1.unsafe_get a1 (s1+i) in
+      Array1.unsafe_set a2 (s2+i) tmp
     done
+
+  external set_raw_float: raw_buffer -> int -> float -> unit = "caml_stub_set_raw_float"
+  external set_raw_int: raw_buffer -> int -> int -> unit = "caml_stub_set_raw_int"
+
 end
 
 module File = struct

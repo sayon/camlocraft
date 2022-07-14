@@ -83,7 +83,7 @@ let cleanup_shader (program:program) (shader:shader) : unit =
 end
 
 let cleanup_all_shaders (program:program) : unit =
-  Kernel.Util.do_all (cleanup_shader program) program.shaders
+  List.iter (cleanup_shader program) program.shaders
 
 let load_program ~name ~vertex_shader_path ~fragment_shader_path ~uniforms =
 let vs = Shader.from_file ~name:vertex_shader_path ~filename:vertex_shader_path ~kind:VertexShader

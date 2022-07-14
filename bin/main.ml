@@ -4,6 +4,7 @@ end
 
 open Setup
 open Graphics.Renderer
+open Kernel.Logger
 
 let process_input ~window : unit=
   let key_pressed k = GLFW.getKey ~window:window ~key:k in
@@ -38,6 +39,7 @@ let main_loop (ctx:graphics_ctx) =
 let _ =
   let window = init () in
   let graphic_context =  init_graphic_context ~window:window in
+  log GeneralLog "Graphic context initialized";
   main_loop graphic_context;
   ignore @@ window;
   ignore @@ graphic_context;

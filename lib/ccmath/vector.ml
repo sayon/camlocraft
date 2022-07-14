@@ -95,8 +95,9 @@ struct
   | 2-> z
   | _-> raise @@ Invalid_argument "Index out of range for vector3"
 
-  let to_string = function
-    | {x; y; z} -> Printf.sprintf "(%s; %s; %s)" (F.to_string x) (F.to_string y) (F.to_string z)
+  let to_string = let s = F.to_string in
+    function
+    | {x; y; z} -> Printf.sprintf "(%s; %s; %s)" (s x) (s y) (s z)
 end
 
 module Vector3F = ((Make_Vector3(FieldFloat)): Vector3Type with module F:= FieldFloat)

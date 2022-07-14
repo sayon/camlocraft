@@ -24,8 +24,20 @@ type graphics_ctx = {
 
 let load_meshes () : renderer =
   log GeneralLog "Loading meshes" ;
-  let shader_program = Programs.Collection.sample_program () in
-  { meshes = [ mesh_from_triangles shader_program VerticesAndNormals Geometry.cube_one ] }
+  begin
+  (* match Bmp.image_of_file "data/textures/sand.bmp"  with *)
+  (*   | Some img -> *)
+  (*     Kernel.Logger.log Kernel.Logger.GeneralLog "File loaded successfully"; *)
+  (*     (\* let texture = Texture.texture_of_image (img) in *\) *)
+  (*     (\* Texture.bind ()  ; *\) *)
+      let shader_program = Programs.Collection.sample_program () in
+      { meshes = [
+            mesh_from_triangles shader_program Geometry.Cube.cube_one ] }
+              (* texture *)
+    (*   ] } *)
+    (* | None -> failwith "Can't open the image" *)
+end;
+
 
 
 module Colors = struct
@@ -36,12 +48,13 @@ let clear_color v = Gl.clear_color (x v) (y v) (z v) (w v)
 
 let render renderer =
   clear_color Colors.background;
-  Kernel.Util.do_all (fun m ->
+  List.iter (fun m ->
       Gl.uniform_matrix4fv m.mvp_id 1 false @@ Matrix4F.to_bigarray m.mvp_matrix;
       Gl.uniform_matrix4fv m.mv_id 1 false @@ Matrix4F.to_bigarray m.mv_matrix;
       Gl.use_program @@ m.program.id.value;
       Gl.bind_vertex_array m.vao.value;
       Gl.draw_arrays (mesh_type_opengl m.mesh_type) 0 m.mesh_count;
+      (* Gl.bind_texture Gl.texture_2d m.texture_unit.id.id; *)
       Gl.flush ()
     )
     @@ renderer.meshes
