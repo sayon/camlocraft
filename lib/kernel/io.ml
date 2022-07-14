@@ -1,25 +1,5 @@
 open Bigarray
-
-module Bigarray_ext = struct
-
-  open Bigarray
-  open Bigarray.Array1
-
-  let create_floats = of_array float32 c_layout
-  let create_ints = of_array int32 c_layout
-  let create_chars = of_array char c_layout
-  let create_int_buffer ~size = create_ints (Array.make size (Int32.of_int 0))
-  let create_char_buffer ~size = create_chars (Array.make size (Char.chr 0))
-  let create_byte_buffer ~size = Bigstring.create size
-  let get ~buffers ~id = Int32.to_int (unsafe_get buffers id)
-
-  (** Utility function to use generators returning their result by a
-      pointer. *)
-  let get_through_buffer generator =
-    let bufferForID = create_int_buffer ~size:1 in
-    generator bufferForID;
-    get ~buffers:bufferForID ~id:0
-end
+open Logger
 
 module RawBuffer = struct
   (** A type of a raw buffer of bytes. *)
@@ -69,4 +49,27 @@ module File = struct
     let len = (Bigarray.Genarray.dims genarray).(0) in
     Bigarray.reshape_1 genarray len
 
+
+  let load_file loader filename =
+    try
+      begin
+        log GeneralLog @@ Printf.sprintf "Trying to open file \"%s\" for reading" filename;
+        let fd = Unix.openfile filename [Unix.O_RDONLY] 700 in
+        log GeneralLog @@ Printf.sprintf "Opened file \"%s\" for reading" filename;
+        let mapped_file : RawBuffer.raw_buffer = map fd in
+        let result = Some (loader filename mapped_file) in
+        Unix.close fd;
+        result
+      end
+    with
+    | Unix.Unix_error (e, s1, s2) ->
+      log IOLog @@
+      Printf.sprintf
+        "Error UnixError while reading file \"%s\":\n Message: %s\n Function: %s \n Parameter: %s"
+        filename (Unix.error_message e) s1 s2;
+      None
+    | Invalid_argument s ->
+      log IOLog @@ Printf.sprintf "Error while reading file \"%s\": %s" filename s; None
+    | Failure s ->
+      log IOLog @@ Printf.sprintf "Failure while reading file \"%s\": %s" filename s; None
 end

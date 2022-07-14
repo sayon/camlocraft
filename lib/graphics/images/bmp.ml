@@ -4,55 +4,84 @@ open Bigarray
 open Image
 
 
-(** BMP file format reader
+(** BMP file format reader. *)
 
-    BMP files have the following structure:
-
-    0       uint16_t bfType;
-    2       uint32_t  bfileSize;
-    6       uint32_t bfReserved;
-    10      uint32_t bOffBits;
-    14      uint32_t biSize;
-    18      uint32_t biWidth;
-    22      uint32_t  biHeight;
-        uint16_t  biPlanes;
-        uint16_t biBitCount;
-        uint32_t biCompression;
-        uint32_t biSizeImage;
-        uint32_t biXPelsPerMeter;
-        uint32_t biYPelsPerMeter;
-        uint32_t biClrUsed;
-        uint32_t  biClrImportant;
-
-    ...
-    Then goes the palette and then a pixel array.
-*)
-
-(** A piece of BMP header with only important parts. *)
-type header = { width: int; height: int }
+(** BMP header. See {!header_from_bigarray} for more details. *)
+type header = {
+  typ: int;
+  fileSize: int;
+  reserved: int;
+  offBits: int;
+  size: int;
+  width: int;
+  height: int;
+  planes: int;
+  bitCount: int;
+  compression: int;
+  sizeImage: int;
+  xPelsPerMeter: int;
+  yPelsPerMeter: int;
+  clrUsed: int;
+  clrImportant: int;
+}
 
 (** Length of all BMP headers combined, in bytes. *)
 let header_length = 54
+let header_show {typ; fileSize; reserved; offBits; size; width; height; planes; bitCount; compression; sizeImage; xPelsPerMeter; yPelsPerMeter; clrUsed; clrImportant;} : string =
+Printf.sprintf "
+  typ           = %d
+  fileSize      = %d
+  reserved      = %d
+  offBits       = %d
+  size          = %d
+  width         = %d
+  height        = %d
+  planes        = %d
+  bitCount      = %d
+  compression   = %d
+  sizeImage     = %d
+  xPelsPerMeter = %d
+  yPelsPerMeter = %d
+  clrUsed       = %d
+  clrImportant  = %d
+" typ fileSize reserved offBits size width height planes bitCount compression sizeImage xPelsPerMeter yPelsPerMeter clrUsed clrImportant
 
-let get_padding width = width mod 3
+let get_padding width = width mod 4
 
 (** Computes the real width of a pixel line in bytes, accounting for the
     padding at the end of the line. *)
-let get_real_byte_width width = width * Formats.BytesIn.bgr + get_padding width
+let get_real_byte_width width =
+  (width * Formats.BytesIn.bgr) + get_padding width
 
 let header_from_bigarray (bigarray:raw_buffer) : header =
-  let width_offset = 18 and height_offset = 22 in
   let bts = slice_bytes bigarray 0 header_length in
-  let width  = Int32.to_int @@ Bytes.get_int32_le bts width_offset
-  and height = Int32.to_int @@ Bytes.get_int32_le bts height_offset in
-  { width; height }
+  let i32 ofs = Int32.to_int @@ Bytes.get_int32_le bts ofs in
+  let i16 ofs = Bytes.get_int16_le bts ofs in
+  {
+    typ           = i16 0;
+    fileSize      = i32 2;
+    reserved      = i32 6;
+    offBits       = i32 10;
+    size          = i32 14;
+    width         = i32 18;
+    height        = i32 22;
+    planes        = i16 24;
+    bitCount      = i16 26;
+    compression   = i32 30;
+    sizeImage     = i32 34;
+    xPelsPerMeter = i32 38;
+    yPelsPerMeter = i32 42;
+    clrUsed       = i32 46;
+    clrImportant  = i32 50;
+  }
 
 let byte_offset_from_xy (header:header) x y =
+
   let w = get_real_byte_width header.width in
   w * y + x * Formats.BytesIn.bgr
 
 (** Get pixel value from an array of bmp pixels. *)
-let get_pixel (header:header) ba x y : Formats.pixel3 =
+let get_pixel (header:header) (ba:raw_buffer) x y : Formats.pixel3 =
   let ofs = byte_offset_from_xy header x y in
   let get_byte = Array1.get ba in
   let b = get_byte ofs
@@ -60,10 +89,12 @@ let get_pixel (header:header) ba x y : Formats.pixel3 =
   and r = get_byte (ofs+2) in
   {b;g;r}
 
-let header_to_meta name : header -> Image.meta = function |{width;height} -> {name; width; height}
+let header_to_meta name : header -> Image.meta = function |{width;height;_} -> {name; width; height}
 
 let image_of_mapped_bmp_array name bmp_header (mapped_image:raw_buffer) : Image.image =
+  log GeneralLog @@ Printf.sprintf "Reading pixels of BMP file...";
   let meta = header_to_meta name bmp_header in
+  log GeneralLog @@ header_show bmp_header;
   let result = Image.from_meta meta in
   for y = 0 to meta.height-1 do
     for x = 0 to meta.width-1 do
@@ -78,31 +109,10 @@ let image_of_bigarray name (ba:raw_buffer): Image.image =
       created if it does not exist, so no value of {!file_perm} will make sense. *)
   (* Assume that the file does not have a palette *)
   let header = header_from_bigarray ba in
+  log GeneralLog @@ Printf.sprintf "Reading header of BMP file successful";
   let mapped_length = Bigarray.Array1.dim ba in
   let pixels_length = mapped_length - header_length in
   let mapped_image = Bigarray.Array1.sub ba header_length pixels_length in
   image_of_mapped_bmp_array name header mapped_image
 
-let image_of_file filename =
-  try
-    begin
-      log GeneralLog @@ Printf.sprintf "Trying to open file \"%s\" for reading" filename;
-      let fd = Unix.openfile filename [Unix.O_RDONLY] 700 in
-      log GeneralLog @@ Printf.sprintf "Opened file \"%s\" for reading" filename;
-      let mapped_file : raw_buffer = Kernel.Io.File.map fd in
-      let result = Some (image_of_bigarray filename mapped_file) in
-      Unix.close fd;
-      result
-    end
-  with
-  | Unix.Unix_error (e, s1, s2) ->
-    log TexturesLog @@
-    Printf.sprintf
-      "Error UnixError while reading texture file \"%s\":\n Message: %s\n Function: %s \n Parameter: %s"
-      filename (Unix.error_message e) s1 s2;
-    None
-  | Invalid_argument s ->
-    log TexturesLog @@ Printf.sprintf "Error while reading texture file \"%s\": %s" filename s; None
-  | Failure s ->
-    log TexturesLog @@ Printf.sprintf "Failure while reading texture file \"%s\": %s" filename s; None
-
+let image_of_file = Kernel.Io.File.load_file image_of_bigarray

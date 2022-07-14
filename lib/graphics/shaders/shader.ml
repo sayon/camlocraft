@@ -4,7 +4,7 @@ end
 
 open Kernel.Logger
 open Kernel.Io
-open Kernel.Io.Bigarray_ext
+open Kernel.Bigarray_ext
 
 (** Shader representation and utility functions. *)
 

@@ -55,12 +55,11 @@ module Image = struct
 
   let set img ~x ~y px =
     let open Formats in
-    let set_ba = Bigarray.Array1.set in
     let ofs = byte_offset_from_xy img x y in
-    set_ba img.pixels (ofs+0) px.a;
-    set_ba img.pixels (ofs+1) px.r;
-    set_ba img.pixels (ofs+2) px.g;
-    set_ba img.pixels (ofs+3) px.b
+    let set_ba i = Bigarray.Array1.set img.pixels (ofs+i) in
+    List.iteri (fun i -> set_ba i)
+    (* [ px.a; px.r; px.g; px.b ] *)
+    [ px.r; px.g; px.b; px.a ]
 
 
   let get img ~x ~y : Formats.pixel4 =

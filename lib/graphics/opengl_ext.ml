@@ -1,15 +1,14 @@
 open struct
   module Gl = Tgl4.Gl
 end
-open Kernel.Io.Bigarray_ext
+open Kernel.Bigarray_ext
 
 type vertex_array_object = { value: int}
 type vertex_buffer_object = { value: int }
 
-(* type vertex_array_format =  Vertices | VerticesAndNormals | VerticesAndNormalsAndTexture *)
-
 open struct
   let float_size = Bigarray.kind_size_in_bytes Bigarray.float32
+  let stride = Bigarray.kind_size_in_bytes Bigarray.float32 * 8
 end
 
 (** Returns a VBO id containing all vertices. *)
@@ -21,11 +20,6 @@ let gen_vertex_buffer ~vertex_buffer : vertex_buffer_object =
   Gl.bind_buffer Gl.array_buffer 0;
   { value = buffer_id }
 
-let stride = Bigarray.kind_size_in_bytes Bigarray.float32 * 8
-(* match layout with *)
-(* | Vertices -> 3 *)
-(* | VerticesAndNormals->6 *)
-(* | VerticesAndNormalsAndTexture->8 *)
 
 (** Returns a VAO id containing all vertices. *)
 let gen_vertex_array ~vertex_buffer : (vertex_array_object  * vertex_buffer_object) =

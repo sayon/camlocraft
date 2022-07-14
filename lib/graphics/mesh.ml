@@ -31,16 +31,14 @@ type mesh = {
   mvp_id: int;
   mv_matrix: matrix4;
   mvp_matrix: matrix4;
-  (* texture_unit: Texture.texture *)
+  texture: Texture.texture
 }
 
 open Geometry.Triangle
 open Geometry.VertexDescription
 open Geometry.Vertices
 
-let mesh_from_triangles prog (ts:vertex_descr triangle list)
-(* texture *)
-  =
+let mesh_from_triangles prog (ts:vertex_descr triangle list) texture =
   let module M = Ccmath.Matrix.Matrix4F in
   let module V = Ccmath.Vector.Vector3F in
   let module VM = Ccmath.Matrix.Vector4FMatrixOps in
@@ -52,21 +50,21 @@ let mesh_from_triangles prog (ts:vertex_descr triangle list)
   and model = M.id
   and view = VM.world
       (* TODO Sample values, to be refactored *)
-      ~position:(V.mk_vec3 2.0 2.0 3.0)
+      ~position:(V.mk_vec3 2.0 2.0 2.0)
       ~target:(V.mk_vec3 0.0 0.0 0.0)
       ~up_vector:Geometry.VectorCollection.up3
   and projection = VM.perspective
-      ~input:(`Fov (Geometry.Conversions.radians_of_degrees 97.0, 4.0/.3.0))
+      ~input:(`Fov (Geometry.Conversions.radians_of_degrees 45.0, 4.0/.3.0))
       ~near_plane: 0.1 ~far_plane: 100.0 in
   {
     vao = vao;
     vertices = ba;
     mesh_type = MeshTriangles;
-    mesh_count = Stdlib.( * ) (List.length ts) 20;
+    mesh_count = Stdlib.( * ) (List.length ts) 3;
     program = prog;
     mv_id = mv_id.uniform_id;
     mvp_id = mvp_id.uniform_id;
     mv_matrix = (let ( * ) = M.mul in view * model);
     mvp_matrix = (let ( * ) = M.mul in projection * view * model);
-    (* texture_unit = texture *)
+    texture = texture 
   }

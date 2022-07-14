@@ -25,17 +25,17 @@ type graphics_ctx = {
 let load_meshes () : renderer =
   log GeneralLog "Loading meshes" ;
   begin
-  (* match Bmp.image_of_file "data/textures/sand.bmp"  with *)
-  (*   | Some img -> *)
-  (*     Kernel.Logger.log Kernel.Logger.GeneralLog "File loaded successfully"; *)
-  (*     (\* let texture = Texture.texture_of_image (img) in *\) *)
-  (*     (\* Texture.bind ()  ; *\) *)
+  match Bmp.image_of_file "data/textures/sand.bmp"  with
+    | Some img ->
+      Kernel.Logger.log Kernel.Logger.GeneralLog "File loaded successfully";
+      let texture = Texture.texture_of_image (img) in
+      (* Texture.bind ()  ; *)
       let shader_program = Programs.Collection.sample_program () in
       { meshes = [
-            mesh_from_triangles shader_program Geometry.Cube.cube_one ] }
-              (* texture *)
-    (*   ] } *)
-    (* | None -> failwith "Can't open the image" *)
+            mesh_from_triangles shader_program Geometry.Cube.cube_one 
+              texture
+          ] }
+   | None -> failwith "Can't open the image"
 end;
 
 
@@ -54,7 +54,7 @@ let render renderer =
       Gl.use_program @@ m.program.id.value;
       Gl.bind_vertex_array m.vao.value;
       Gl.draw_arrays (mesh_type_opengl m.mesh_type) 0 m.mesh_count;
-      (* Gl.bind_texture Gl.texture_2d m.texture_unit.id.id; *)
+      Gl.bind_texture Gl.texture_2d m.texture.id.id;
       Gl.flush ()
     )
     @@ renderer.meshes

@@ -1,12 +1,13 @@
-open Io.Bigarray_ext
+open Bigarray_ext
 open Tgl4
 
-type log_kind = ShadersLog | GeneralLog | TexturesLog
+type log_kind = ShadersLog | GeneralLog | TexturesLog | IOLog
 
 let log_kind_repr kind = "Log: " ^
                          (match kind with
                           | ShadersLog -> "Shader"
                           | GeneralLog -> "General"
+                          | IOLog -> "IO"
                           | TexturesLog -> "Textures")
                          ^ ": \t"
 

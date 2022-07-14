@@ -3,7 +3,7 @@ open struct
 end
 
 open Kernel.Logger
-open Kernel.Io.Bigarray_ext
+open Kernel.Bigarray_ext
 open Shader
 
 type id = { value: int }
@@ -77,30 +77,30 @@ let create_program
     raise @@ Invalid_argument "Shader types (vertex, fragment) do not match"
 
 open struct
-let cleanup_shader (program:program) (shader:shader) : unit =
-  Gl.detach_shader program.id.value shader.id.value;
-  Gl.delete_shader shader.id.value
+  let cleanup_shader (program:program) (shader:shader) : unit =
+    Gl.detach_shader program.id.value shader.id.value;
+    Gl.delete_shader shader.id.value
 end
 
 let cleanup_all_shaders (program:program) : unit =
   List.iter (cleanup_shader program) program.shaders
 
 let load_program ~name ~vertex_shader_path ~fragment_shader_path ~uniforms =
-let vs = Shader.from_file ~name:vertex_shader_path ~filename:vertex_shader_path ~kind:VertexShader
-and fs = Shader.from_file ~name:fragment_shader_path ~filename:fragment_shader_path ~kind:FragmentShader
-in
-log ShadersLog @@ Printf.sprintf "Loading program \"%s\"" name;
-let res = create_program
-    ~name:name
-    ~vertex_shader: vs
-    ~fragment_shader: fs
-    ~uniforms: uniforms
-in
-diagnose name res;
-match res with
-| Linked program ->
-  cleanup_all_shaders program; program
-| LinkingError e -> failwith e
+  let vs = Shader.from_file ~name:vertex_shader_path   ~filename:vertex_shader_path   ~kind:VertexShader
+  and fs = Shader.from_file ~name:fragment_shader_path ~filename:fragment_shader_path ~kind:FragmentShader
+  in
+  log ShadersLog @@ Printf.sprintf "Loading program \"%s\"" name;
+  let res = create_program
+      ~name:name
+      ~vertex_shader: vs
+      ~fragment_shader: fs
+      ~uniforms: uniforms
+  in
+  diagnose name res;
+  match res with
+  | Linked program ->
+    cleanup_all_shaders program; program
+  | LinkingError e -> failwith e
 
 
 module Collection = struct

@@ -9,7 +9,6 @@ uniform sampler2D u_texture;
 
 void main()
 {
-  vec4 object_color = vec4(1.0f,0.3f,0.4f, 1.0f);
 
   vec4 light_color = vec4(1.0f,1.0f,1.0f,1.0f);
   vec3 light_position = vec3(-1.5f,-2.5f, 10.0f);
@@ -30,6 +29,6 @@ void main()
 
   vec4 tex_color = texture(u_texture, v2_tex);
 
-   FragColor =  object_color * light_color * (diffuse + ambient + specular);
+  FragColor =  tex_color * light_color * (diffuse + ambient + specular);
   //FragColor =  tex_color;
 }
