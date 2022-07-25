@@ -6,12 +6,19 @@ Layers + noise + maybe caves?
 * Time service
 Timed events + time between frames
 * Renderer
+** Text
 ** Camera
 follows an object or freeway
 ** World
 *** Terrain
-- Shaders: Type, Vertex, transformation matrix, Texture coordinates (is texture
-uniform?)
+- Multiple objects via instance rendering
+- Big texture for all types of terrain
+- Shaders:
+     - Type
+     - Vertex
+     - transformation matrix
+     - texture coordinates
+     - material code
 - Only draw what's visible
 *** Water
 Texture + fancy shaders; noise, reflection of sky? 
@@ -29,3 +36,11 @@ Trees? Other resources
 - Shaders should be aware of them
 - Only small-distance point lights?
   Just phong model with point lights
+* VBO layout
+x y z : float, vertex
+a b c : float, normal
+t s : float, texture
+f11..14: float, transformation matrix?
+f21..24: float
+f31..34: float
+f41..44: float

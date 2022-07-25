@@ -97,14 +97,16 @@ end
 module Rectangle = struct
 
   let mk_rect a1 a2 a3 a4 =
+    let texture_atlas_dim = 8 in
+    let limit = 1.0 /. (Float.of_int texture_atlas_dim) in
     let open Triangle in
     let open VertexDescription in
     let n = normal_aux a1 a2 a4 in
     let augment v s t : vertex_descr = {v=v; n = Some n; tx= Some {s;t} } in
-    let v1 = augment a1 0.0 1.0
-    and v2 = augment a2 1.0 1.0
+    let v1 = augment a1 0.0 limit
+    and v2 = augment a2 limit limit
     and v3 = augment a3 0.0 0.0
-    and v4 = augment a4 1.0 0.0
+    and v4 = augment a4 limit 0.0
     in
     [ mk_triangle v1 v2 v4; mk_triangle v1 v4 v3 ]
 

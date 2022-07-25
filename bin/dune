@@ -1,5 +1,5 @@
 (executable
  (public_name camlocraft)
  (name main)
- (libraries tgls tgls.tgl4 glfw-ocaml graphics ccmath)
+ (libraries control kernel graphics ccmath tgls tgls.tgl4 glfw-ocaml)
 )

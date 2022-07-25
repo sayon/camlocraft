@@ -64,8 +64,8 @@ let from_source_try ~name ~source ~kind =
 
 let from_file_try ~name ~filename ~kind =
   let s = match File.read filename with
-    | Right error -> LoadingError error
-    | Left source -> from_source_try
+    | Error error -> LoadingError error
+    | Ok source -> from_source_try
                        ~name:name
                        ~source:source
                       ~kind:kind

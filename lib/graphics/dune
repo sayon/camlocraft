@@ -4,5 +4,5 @@
  (name graphics)
  (inline_tests (deps (source_tree tests)))
  (preprocess (pps ppx_inline_test))
- (libraries tgls tgls.tgl4 glfw-ocaml bigstring ccmath kernel)
+ (libraries tgls tgls.tgl4 glfw-ocaml bigstring ccmath kernel )
 )

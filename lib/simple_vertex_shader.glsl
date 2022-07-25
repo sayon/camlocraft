@@ -8,13 +8,14 @@ out vec3 v3_normal;
 out vec3 v3_position;
 out vec2 v2_tex;
 
-uniform mat4 u_MVP;
-uniform mat4 u_MV;
+uniform mat4 u_M;
+uniform mat4 u_V;
+uniform mat4 u_P;
 
 void main()
 {
-  v3_normal = normalize( vec3( u_MV * vec4(in_normal, 0.0)) );
-  vec4 position = u_MVP * vec4(in_position, 1.0);
+  v3_normal = normalize( vec3( u_V * u_M * vec4(in_normal, 0.0)) );
+  vec4 position = u_P * u_V * u_M * vec4(in_position, 1.0);
   v3_position = vec3( position );
   v2_tex = in_tex;
   gl_Position = position;

@@ -111,7 +111,7 @@ struct
     copy
 
   let transpose m =
-    let copy = create () in 
+    let copy = create () in
     for i = 0 to 3 do
       for j = 0 to 3 do
         copy.(i).(j) <- m.(j).(i)

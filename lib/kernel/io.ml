@@ -30,15 +30,15 @@ module RawBuffer = struct
 end
 
 module File = struct
-  (** Reads all text from a specified file. Returns {!Either.Left} of text or
-      {!Either.right} of an error message. *)
+  (** Reads all text from a specified file. Returns {!Result.Ok} of text or
+      {!Result.error} of an error message. *)
   let read filename =
     try
       let ch = open_in filename in
       let s = really_input_string ch (in_channel_length ch) in
       close_in ch;
-      Either.Left s
-    with | Sys_error e -> Either.Right e
+      Result.Ok s
+    with | Sys_error e -> Result.Error e
 
 
   (** Helper to efficiently map an entire file in memory. See {!Unix.map_file}.  *)

@@ -86,7 +86,7 @@ struct
   let length_sq x = dot x x
   let length v = F.sqrt @@ length_sq v
 
-  let normalize v = map (fun c -> c / length v) v
+  let normalize v = if F.equal (length v) F.zero then v else map (fun c -> c / length v) v
 
   let get v i = match v with | {x; y; z} ->
   match i with

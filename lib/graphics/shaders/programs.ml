@@ -5,6 +5,7 @@ end
 open Kernel.Logger
 open Kernel.Bigarray_ext
 open Shader
+open Ccmath.Matrix
 
 type id = { value: int }
 
@@ -27,9 +28,24 @@ module Uniform = struct
 
   let get_by_name p s = List.assoc s p.uniforms
 
-  (* TODO a typetag for the variable could be useful *)
-  let set_int p uname value = match get_by_name p uname with
-    | {uniform_id; _} -> Gl.uniform1i uniform_id value
+  type matrix4 = Ccmath.Matrix.Matrix4F.matrix4
+
+  let set p uname value = match get_by_name p uname with
+    | {uniform_id; _} ->
+      match value with
+      | `Int value ->
+        log ShadersLog @@
+        Printf.sprintf
+          "Setting integer uniform variable \"%s\" to: %d"
+          uname value ;
+        Gl.uniform1i uniform_id value
+      | `Matrix value ->
+        log ShadersLog @@
+        Printf.sprintf
+          "Setting matrix4 uniform variable \"%s\" to:\n%s"
+          uname (Matrix4F.to_string value) ;
+        Gl.uniform_matrix4fv uniform_id 1 false
+        @@ Matrix4F.to_bigarray value
 
 end
 
@@ -108,6 +124,5 @@ module Collection = struct
     load_program ~name:"Sample program"
       ~vertex_shader_path:"lib/simple_vertex_shader.glsl"
       ~fragment_shader_path:"lib/simple_fragment_shader.glsl"
-      ~uniforms:[ "u_MVP"; "u_MV";  "u_texture"]
-
+      ~uniforms: [ "u_V"; "u_M"; "u_P"; "u_texture" ]
 end
